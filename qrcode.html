@@ -1,0 +1,276 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <title>Gerador de QR Codes - 50 Mesas</title>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@300;400;600&family=Playfair+Display:ital,wght@0,600;0,700;1,600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
+    
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrious/4.0.2/qrious.min.js"></script>
+
+    <style>
+        :root {
+            --terra-dark: #7a2f1d;
+            --terra-main: #9e3f28;
+            --creme: #FCFAF6;
+            --text-dark: #2B2321;
+            --gold: #c29b57;
+            --white: #ffffff;
+        }
+
+        body {
+            margin: 0;
+            padding: 20px;
+            background: #e6e6e6;
+            font-family: 'Montserrat', sans-serif;
+        }
+
+        .painel-controle {
+            background: white;
+            padding: 20px;
+            border-radius: 12px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            text-align: center;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .btn-imprimir {
+            background: var(--terra-main);
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 1.2rem;
+            font-weight: bold;
+            border-radius: 8px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            box-shadow: 0 4px 10px rgba(158, 63, 40, 0.3);
+            transition: 0.2s;
+        }
+
+        .btn-imprimir:hover { background: var(--terra-dark); }
+
+        #cards-container {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+            gap: 30px;
+            justify-items: center;
+            max-width: 1400px;
+            margin: 0 auto;
+        }
+
+        .table-card {
+            width: 320px;
+            height: 500px;
+            background: var(--creme);
+            border-radius: 12px;
+            box-shadow: 0 15px 40px rgba(43, 35, 33, 0.15);
+            overflow: hidden;
+            position: relative;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        .header {
+            width: 100%;
+            height: 140px;
+            background: linear-gradient(135deg, var(--terra-dark) 0%, var(--terra-main) 100%);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+            z-index: 1;
+        }
+        
+        .header::after {
+            content: "";
+            position: absolute;
+            bottom: -1px;
+            left: 0;
+            width: 100%;
+            height: 30px;
+            background: var(--creme);
+            border-radius: 100% 0 0 0 / 100px 0 0 0;
+            z-index: 2;
+        }
+
+        .pre-logo {
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.65rem;
+            text-transform: uppercase;
+            letter-spacing: 4px;
+            margin-bottom: 2px;
+            z-index: 3;
+        }
+
+        .logo-text {
+            color: var(--white);
+            font-family: 'Playfair Display', serif;
+            font-weight: 700;
+            font-size: 1.8rem;
+            letter-spacing: 2px;
+            z-index: 3;
+            text-shadow: 1px 1px 3px rgba(0,0,0,0.2);
+        }
+
+        .mesa-badge {
+            margin-top: -25px;
+            background: var(--text-dark);
+            color: var(--gold);
+            padding: 6px 30px;
+            border-radius: 4px;
+            font-family: 'Playfair Display', serif;
+            font-weight: 600;
+            font-style: italic;
+            font-size: 1.4rem;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+            z-index: 10;
+            border: 2px solid var(--creme);
+        }
+
+        .qr-container {
+            margin-top: 30px;
+            padding: 10px;
+            border: 3px double var(--terra-main); 
+            border-radius: 4px;
+            background: var(--white);
+        }
+
+        .qr-code {
+            width: 170px;
+            height: 170px;
+            display: block;
+            mix-blend-mode: multiply;
+        }
+
+        .cta { margin-top: 20px; color: var(--text-dark); }
+        .cta h3 { margin: 0; font-family: 'Playfair Display', serif; font-weight: 700; font-size: 1.3rem; color: var(--terra-main); }
+        .cta p { margin: 5px 0 0; font-size: 0.8rem; font-weight: 300; color: #555; letter-spacing: 0.5px; }
+
+        .footer {
+            margin-top: auto;
+            width: 100%;
+            padding: 12px;
+            background: transparent;
+            font-size: 0.7rem;
+            color: #888;
+            border-top: 1px solid rgba(158, 63, 40, 0.1);
+        }
+
+        .dev-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 4px 10px;
+            text-decoration: none;
+            color: var(--terra-main);
+            font-weight: 400;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+        }
+        
+        .material-icons { font-size: 13px; vertical-align: middle; color: var(--gold); }
+
+        @media print {
+            body { 
+                background: white; 
+                padding: 0; 
+                -webkit-print-color-adjust: exact; 
+                print-color-adjust: exact; 
+            }
+            .no-print { display: none !important; }
+            
+            #cards-container {
+                display: grid;
+                grid-template-columns: repeat(2, 1fr);
+                gap: 20px;
+                max-width: 100%;
+            }
+
+            .table-card { 
+                box-shadow: none; 
+                border: 1px dashed #ccc; 
+                page-break-inside: avoid; 
+                margin-bottom: 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="painel-controle no-print">
+        <div>
+            <h2 style="margin: 0; color: var(--text-dark);">Gerador de QR Codes</h2>
+            <p style="margin: 5px 0 0; color: #666;">Mesas 01 a 50 com links vinculados ao Netlify</p>
+        </div>
+        <button class="btn-imprimir" onclick="window.print()">
+            <span class="material-icons" style="color: white; font-size: 24px;">print</span>
+            Imprimir Cartões (Folha A4)
+        </button>
+    </div>
+
+    <div id="cards-container"></div>
+
+    <script>
+        const container = document.getElementById('cards-container');
+        const linkBaseUrl = 'https://restaurante-raiz-santa-tereza.netlify.app/mesa';
+        let htmlGerado = '';
+
+        // 1. Cria a estrutura (os cartões em branco)
+        for (let i = 1; i <= 50; i++) {
+            const numMesa = i.toString().padStart(2, '0');
+            htmlGerado += `
+                <div class="table-card">
+                    <div class="header">
+                        <div class="pre-logo">Restaurante</div>
+                        <div class="logo-text">BAR RAIZ</div>
+                    </div>
+                    
+                    <div class="mesa-badge">Mesa ${numMesa}</div>
+
+                    <div class="qr-container">
+                        <canvas id="qr-${numMesa}" class="qr-code"></canvas>
+                    </div>
+
+                    <div class="cta">
+                        <h3>Menu Digital</h3>
+                        <p>Aponte a câmera para fazer seu pedido</p>
+                    </div>
+
+                    <div class="footer">
+                        <div style="margin-top: 2px; font-size: 0.6rem; letter-spacing: 1px;">VICTORINOENG.COM.BR</div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Joga a estrutura na tela
+        container.innerHTML = htmlGerado;
+
+        // 2. Desenha os 50 QR Codes instantaneamente
+        for (let i = 1; i <= 50; i++) {
+            const numMesa = i.toString().padStart(2, '0');
+            const linkMesa = `${linkBaseUrl}${numMesa}.html`;
+            
+            // A mágica: Biblioteca gera e cola o QR Code direto no quadro
+            new QRious({
+                element: document.getElementById(`qr-${numMesa}`),
+                value: linkMesa,
+                size: 300,
+                background: 'white',
+                foreground: '#2B2321', // Cor do QR code combinando com seu design
+                level: 'M'
+            });
+        }
+    </script>
+
+</body>
+</html>
